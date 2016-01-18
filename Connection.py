@@ -60,8 +60,11 @@ class Connection:
             if not stream == "":
                 print (stream)
                 self.parse(stream)
-            else:
+            else if self.lastping + self.pingtimeout > time.time():
                 self.connected = False
+            else:
+                print ("This shouldn't happen! (no ping timeout?)")
+                quit()
     
     def connect (self):
         self.s = socket.socket()
@@ -82,8 +85,9 @@ class Connection:
         lines = stream.split("\n")
         for l in lines:
             if l[:4] == "PING":
-                pong = "PONG" + l[4:]
+                pong = "PONG" + l[4:] + "\n"
                 self.s.send(pong.encode("UTF-8"))
+                self.lastping = time.time()
                 print (pong)
 
 if __name__ == '__main__':

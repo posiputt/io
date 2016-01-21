@@ -60,7 +60,7 @@ class Connection:
             if not stream == "":
                 print (stream)
                 self.parse(stream)
-            else if self.lastping + self.pingtimeout > time.time():
+            elif self.lastping + self.pingtimeout > time.time():
                 self.connected = False
             else:
                 print ("This shouldn't happen! (no ping timeout?)")

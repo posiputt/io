@@ -12,7 +12,7 @@ class Connection:
 
     You should only ever need the method run()
     """
-    def __init__ (self, server, port, nicknames, realname, ident):
+    def __init__ (self, server, port, nicknames, realname, ident, admin):
         """
         Parameters:
         -----------
@@ -21,6 +21,7 @@ class Connection:
         nicknames:  tupel of strings (e. g. ("iobot", "i0bot"))
         realname:   string (e. g. "iobot")
         ident:      string (e. g. "iobot")
+        admin:      string (e. g. your nickname on the server)
         """
         self.SERVER = server
         self.PORT = port
@@ -28,20 +29,25 @@ class Connection:
         self.reconnects = 0
         self.REALNAME = realname
         self.IDENT = ident
+        self.ADMIN = admin
         self.lastping = time.time()
         self.pingtimeout = 500
         self.sleep_before_reconnect = 10
         self.connected = False
 
     def run (self):
+        """
+        If you set up this class properly, this should just establish
+        and keep up a connection to an IRC server of your choosing.
+        """
         run = True
         stub = ''
         while run:
             if not self.connected:
                 try:
                     if not self.reconnects == 0:
-                        print ("Waiting %i seconds, \
-                                then reconnecting [%i]\n" % \
+                        print ("*** Waiting %i seconds, \
+                                then reconnecting [%i] ***" % \
                                 (self.sleep_before_reconnect, \
                                 self.reconnects))
                         self.s.close ()
@@ -51,6 +57,7 @@ class Connection:
                     print ("Connecting to " + self.SERVER)
                     self.connected = True
                     self.connect()
+                    self.send_to_server("PRIVMSG " + self.ADMIN + " :Connected successfully! [%i]\n" % self.reconnects)
                     self.reconnects += 1
                 except Exception as e:
                     self.connected = False
@@ -60,11 +67,9 @@ class Connection:
             if not stream == "":
                 print (stream)
                 self.parse(stream)
-            elif self.lastping + self.pingtimeout > time.time():
+            if self.lastping + self.pingtimeout < time.time():
                 self.connected = False
-            else:
-                print ("This shouldn't happen! (no ping timeout?)")
-                quit()
+                print ("*** Lost connection ***")
     
     def connect (self):
         self.s = socket.socket()
@@ -74,7 +79,7 @@ class Connection:
                 "User " + self.IDENT + " " + \
                 self.SERVER + " bla: " + \
                 self.REALNAME + "\n"
-        self.s.send(connection_msg.encode("UTF-8"))
+        self.send_to_server(connection_msg)
 
     def listen (self, chars):
         s_ready = select.select([self.s],[],[],10)
@@ -86,9 +91,12 @@ class Connection:
         for l in lines:
             if l[:4] == "PING":
                 pong = "PONG" + l[4:] + "\n"
-                self.s.send(pong.encode("UTF-8"))
+                self.send_to_server(pong)
                 self.lastping = time.time()
                 print (pong)
 
+    def send_to_server(self, message):
+        self.s.send(message.encode("UTF-8"))
+
 if __name__ == '__main__':
-    print ("This file shouldn't be executed.\n")
+    print ("*** This file shouldn't be executed. ***")

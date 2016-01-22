@@ -12,16 +12,18 @@ class Connection:
 
     You should only ever need the method run()
     """
-    def __init__ (self, server, port, nicknames, realname, ident, admin):
+    def __init__ (self, server, port, nicknames, realname, ident, admins):
         """
         Parameters:
         -----------
         server:     string (e. g. "chat.freenode.net")
         port:       integer (e. g. 6667)
-        nicknames:  tupel of strings (e. g. ("iobot", "i0bot"))
+        nicknames:  tuple of strings (e. g. ("iobot", "i0bot"))
         realname:   string (e. g. "iobot")
         ident:      string (e. g. "iobot")
-        admin:      string (e. g. your nickname on the server)
+        admins:     tuple of strings (
+                    e. g. your nicknames on the server:
+                    ("terry", "john", "michael")
         """
         self.SERVER = server
         self.PORT = port
@@ -29,7 +31,7 @@ class Connection:
         self.reconnects = 0
         self.REALNAME = realname
         self.IDENT = ident
-        self.ADMIN = admin
+        self.ADMINS = admins
         self.lastping = time.time()
         self.pingtimeout = 500
         self.sleep_before_reconnect = 10
@@ -57,7 +59,9 @@ class Connection:
                     print ("Connecting to " + self.SERVER)
                     self.connected = True
                     self.connect()
-                    self.send_to_server("PRIVMSG " + self.ADMIN + " :Connected successfully! [%i]\n" % self.reconnects)
+                    for a in self.ADMINS:
+                        msg = "PRIVMSG " + a + " :Connected successfully! [%i]\n" % self.reconnects
+                        self.send_to_server(msg)
                     self.reconnects += 1
                 except Exception as e:
                     self.connected = False

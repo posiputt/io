@@ -1,0 +1,22 @@
+Ideas
+-----
+
+* Split core functionalities into several classes:
+	- Connection
+	- Log
+	- URL expander
+	- ...
+
+* Tie them all together in a Class, that loops through them
+	every of the core classes would need a function to be called on each iteration of the loop. maybe just make them callable?
+
+Scribble
+--------
+
+Could look like this:
+
+con = Connection(...)
+log = Log(...)
+urlexp = UrlExp(...)
+run = Run((con, log, urlexp))
+run.do() // loop forever!
